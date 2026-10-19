@@ -1,0 +1,15 @@
+name: build-gh-pages
+on: {push: {branches: [main]}, workflow_dispatch: {}}
+permissions: {contents: write}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          pip install pillow
+          mkdir site && cp index.html manifest.webmanifest sw.js site/ && touch site/.nojekyll
+          python tools/make_icons.py
+          cd site && git init -b gh-pages && git add -A
+          git -c user.name=bot -c user.email=bot@users.noreply.github.com commit -m "Deploy"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" gh-pages
